@@ -425,17 +425,26 @@ async function loadStandings(){
 }
 
 async function loadNews(){
-  try{
-    const rss=await getJSON(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.nascar.com/rss/news/category/series/nascar-cup-series/')}&count=10`);
-    const items=(rss.items||[]);
-    if(!items.length)throw new Error('empty');
-    const heads=items.slice(0,10).map(i=>i.title);
-    $('ticker').innerHTML=heads.concat(heads).map(h=>`<span>${h}</span>`).join('');
-    $('news').innerHTML=items.slice(0,8).map(i=>{
-      const ds=i.description?i.description.replace(/<[^>]+>/g,'').substring(0,100):'';
-      return `<a class="news-item" href="${i.link}" target="_blank" rel="noopener"><div class="hl">${i.title}</div>${ds?`<div class="ds">${ds}…</div>`:''}<div class="tm">${relTime(i.pubDate)}</div></a>`;
-    }).join('');
-  }catch(e){$('news').innerHTML='<div class="empty">Headlines unavailable &mdash; <a href="https://www.nascar.com/news/" target="_blank" style="color:var(--gold)">NASCAR.com</a></div>';}
+  const feeds=[
+    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.nascar.com/rss/news/category/series/nascar-cup-series/')}&count=10`,
+    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://motorsport.com/rss/nascar/')}&count=10`,
+    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://racingnews365.com/rss/nascar')}&count=10`
+  ];
+  for(const url of feeds){
+    try{
+      const rss=await getJSON(url);
+      const items=(rss.items||[]).filter(i=>i.title);
+      if(!items.length)continue;
+      const heads=items.slice(0,10).map(i=>i.title);
+      $('ticker').innerHTML=heads.concat(heads).map(h=>`<span>${h}</span>`).join('');
+      $('news').innerHTML=items.slice(0,8).map(i=>{
+        const ds=i.description?i.description.replace(/<[^>]+>/g,'').replace(/&[^;]+;/g,'').substring(0,100):'';
+        return `<a class="news-item" href="${i.link}" target="_blank" rel="noopener"><div class="hl">${i.title}</div>${ds?`<div class="ds">${ds}…</div>`:''}<div class="tm">${relTime(i.pubDate)}</div></a>`;
+      }).join('');
+      return;
+    }catch(e){continue;}
+  }
+  $('news').innerHTML='<div class="empty">Headlines unavailable &mdash; <a href="https://www.nascar.com/news/" target="_blank" style="color:var(--gold)">NASCAR.com &#8599;</a></div>';
 }
 
 function tickCountdown(){
