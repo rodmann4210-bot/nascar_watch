@@ -377,13 +377,23 @@ function renderJGRSpotlight(){
 
 async function loadStandings(){
   try{
+    // Get driver names from scoreboard first
+    const sbData=await getJSON(`${BASE}/scoreboard`);
+    const driverNames={};
+    (sbData.events||[]).forEach(ev=>{
+      ((ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors)||[]).forEach(c=>{
+        const id=String(c.id||(c.athlete&&c.athlete.id)||'');
+        const name=(c.athlete&&(c.athlete.displayName||c.athlete.fullName))||'';
+        if(id&&name)driverNames[id]=name;
+      });
+    });
+    // Now get standings
     const top=await getJSON(`https://sports.core.api.espn.com/v2/sports/racing/leagues/${LEAGUE}/seasons/2026/types/2/standings`);
     const ref=(top.items&&top.items[0]&&top.items[0]['$ref'])||'';
     if(!ref){$('standings').innerHTML='<div class="empty">Standings unavailable.</div>';return;}
     const data=await getJSON(ref.replace('http://','https://'));
     const rows=data.standings||[];
     if(!rows.length){$('standings').innerHTML='<div class="empty">Standings unavailable.</div>';return;}
-    // Fetch athlete names in parallel (just need display names)
     const parsed=rows.map(row=>{
       const rec=(row.records&&row.records[0])||{};
       const stats=rec.stats||[];
@@ -391,16 +401,15 @@ async function loadStandings(){
       const athleteRef=(row.athlete&&row.athlete['$ref'])||'';
       const idMatch=athleteRef.match(/athletes\/(\d+)/);
       const id=idMatch?idMatch[1]:'';
-      return {id, stats, gs, athleteRef};
+      return {id,stats,gs};
     });
+    statsCache._standingsRows=parsed;
+    statsCache._driverNames=driverNames;
     $('standCt').textContent=parsed.length+' drivers';
-    // Get athlete names from scoreboard competitor list (already loaded)
-    // Fall back to athlete ID display
     let html='';
     parsed.slice(0,35).forEach((p,i)=>{
       const isJGR=JGR_IDS.has(p.id);
-      const jgrInfo=JGR[p.id];
-      const name=jgrInfo?jgrInfo.name:('Driver #'+p.id);
+      const name=driverNames[p.id]||(JGR[p.id]&&JGR[p.id].name)||('Driver #'+p.id);
       const rank=p.gs('rank')||p.gs('RK')||(i+1);
       const pts=p.gs('championshipPts')||p.gs('PTS');
       const wins=p.gs('wins')||p.gs('W');
@@ -412,24 +421,21 @@ async function loadStandings(){
       </div>`;
     });
     $('standings').innerHTML=html;
-    statsCache._standingsRows=parsed;
   }catch(e){$('standings').innerHTML='<div class="empty">Standings unavailable — check NASCAR.com</div>';}
 }
 
 async function loadNews(){
   try{
-    const data=await getJSON(`https://site.api.espn.com/apis/site/v2/sports/motorsports/nascar/news?limit=12`);
-    const arts=(data.articles||[]).filter(a=>a.headline);
-    if(!arts.length){$('news').innerHTML='<div class="empty">No headlines.</div>';return;}
-    const heads=arts.slice(0,10).map(a=>a.headline);
+    const rss=await getJSON(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.nascar.com/rss/news/category/series/nascar-cup-series/')}&count=10`);
+    const items=(rss.items||[]);
+    if(!items.length)throw new Error('empty');
+    const heads=items.slice(0,10).map(i=>i.title);
     $('ticker').innerHTML=heads.concat(heads).map(h=>`<span>${h}</span>`).join('');
-    $('news').innerHTML=arts.slice(0,8).map(a=>{
-      const href=(a.links&&a.links.web&&a.links.web.href)||'#';
-      const when=a.published?`<div class="tm">${relTime(a.published)}</div>`:'';
-      const ds=a.description?`<div class="ds">${a.description.substring(0,100)}${a.description.length>100?'…':''}</div>`:'';
-      return `<a class="news-item" href="${href}" target="_blank" rel="noopener"><div class="hl">${a.headline}</div>${ds}${when}</a>`;
+    $('news').innerHTML=items.slice(0,8).map(i=>{
+      const ds=i.description?i.description.replace(/<[^>]+>/g,'').substring(0,100):'';
+      return `<a class="news-item" href="${i.link}" target="_blank" rel="noopener"><div class="hl">${i.title}</div>${ds?`<div class="ds">${ds}…</div>`:''}<div class="tm">${relTime(i.pubDate)}</div></a>`;
     }).join('');
-  }catch(e){$('news').innerHTML='<div class="err">News feed unavailable.</div>';}
+  }catch(e){$('news').innerHTML='<div class="empty">Headlines unavailable &mdash; <a href="https://www.nascar.com/news/" target="_blank" style="color:var(--gold)">NASCAR.com</a></div>';}
 }
 
 function tickCountdown(){
