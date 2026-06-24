@@ -1,0 +1,593 @@
+<!-- © 2026 Roderick Grimes. All rights reserved. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NASCAR Watch — Joe Gibbs Racing · Cup Series</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#0d0d0d;--black-2:#141414;--black-3:#1c1c1c;
+  --red:#CC0000;--red-bright:#e60000;--red-dim:#8a0000;
+  --gold:#FFD700;--gold-dim:#c9a800;--gold-dark:#7a6400;
+  --ink:#f0ece4;--muted:#9a9a9a;--muted-2:#5a5a5a;
+  --green:#3dba6f;--orange:#FF7A29;
+  --line:rgba(255,215,0,.18);--line-soft:rgba(255,215,0,.08);
+  --panel:#181818;--panel-2:#1f1f1f;
+  --glow-red:rgba(204,0,0,.35);--stripe:rgba(204,0,0,.018);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--black);color:var(--ink);font-family:'Barlow',sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;background:radial-gradient(1100px 500px at 70% -5%,var(--glow-red),transparent 55%),repeating-linear-gradient(135deg,var(--stripe) 0 1px,transparent 1px 22px),var(--black);background-attachment:fixed;padding:0 0 60px}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1300px;margin:0 auto;padding:0 20px}
+.ticker{height:32px;background:var(--red);overflow:hidden;display:flex;align-items:center;border-bottom:2px solid var(--gold)}
+.ticker .tag{background:var(--gold);color:var(--black);font-family:'Barlow Condensed';font-weight:900;font-size:11px;letter-spacing:2px;padding:0 14px;height:32px;display:flex;align-items:center;flex:none;text-transform:uppercase}
+.ticker .track{display:inline-flex;align-items:center;animation:scroll 60s linear infinite;white-space:nowrap}
+.ticker .track span{font-family:'Barlow Condensed';font-weight:600;font-size:13px;padding:0 24px;position:relative;opacity:.95}
+.ticker .track span::before{content:"◆";color:var(--gold);position:absolute;left:6px;font-size:7px;top:50%;transform:translateY(-50%)}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+header{padding:22px 0 16px;border-bottom:1px solid var(--line-soft)}
+.head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.brand{display:flex;align-items:center;gap:16px}
+.crest{width:58px;height:58px;flex:none;border-radius:4px;background:linear-gradient(160deg,var(--red),var(--red-dim));border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:900;color:var(--gold);font-size:13px;letter-spacing:1px;text-align:center;line-height:1.2;box-shadow:0 4px 20px rgba(0,0,0,.6)}
+.brand h1{font-family:'Barlow Condensed';font-weight:900;font-size:32px;letter-spacing:1.5px;line-height:1;text-transform:uppercase}
+.brand h1 .g{color:var(--gold)}
+.brand .sub{font-family:'Barlow Condensed';font-weight:600;letter-spacing:3px;font-size:11px;color:var(--gold-dim);text-transform:uppercase;margin-top:5px}
+.status{text-align:right;font-family:'Barlow Condensed';letter-spacing:.5px}
+.status .live{display:inline-flex;align-items:center;gap:7px;color:var(--gold);font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;flex:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,215,0,.4)}70%{box-shadow:0 0 0 8px rgba(255,215,0,0)}100%{box-shadow:0 0 0 0 rgba(255,215,0,0)}}
+.status .upd{color:var(--muted);font-size:12px;margin-top:4px}
+.hero{margin-top:20px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:linear-gradient(120deg,rgba(204,0,0,.25),var(--panel));box-shadow:0 16px 48px rgba(0,0,0,.6)}
+.hero-top{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border-bottom:1px solid var(--line-soft);padding:8px 18px}
+.hero-top .lbl{font-family:'Barlow Condensed';font-weight:800;letter-spacing:3px;font-size:12px;color:var(--gold);text-transform:uppercase}
+.hero-top .race-num{font-family:'Barlow Condensed';font-weight:700;font-size:13px;color:var(--muted);letter-spacing:1px}
+.hero-body{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;padding:20px 22px}
+.race-info .track-name{font-family:'Barlow Condensed';font-weight:900;font-size:38px;line-height:1;text-transform:uppercase;letter-spacing:.5px}
+.race-info .track-name .hi{color:var(--gold)}
+.race-info .race-meta{font-family:'Barlow Condensed';font-weight:600;font-size:14px;color:var(--muted);letter-spacing:.5px;margin-top:8px}
+.race-info .broadcast{display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);border-radius:4px;padding:4px 10px;font-family:'Barlow Condensed';font-weight:700;font-size:12px;letter-spacing:1.5px;color:var(--gold);text-transform:uppercase}
+.count{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+.count .unit{text-align:center;min-width:58px}
+.count .num{font-family:'Barlow Condensed';font-weight:900;font-size:44px;color:var(--gold);line-height:1}
+.count .cap{font-family:'Barlow Condensed';font-weight:600;letter-spacing:2px;font-size:10px;color:var(--muted-2);text-transform:uppercase;margin-top:4px}
+.count .colon{font-family:'Barlow Condensed';font-weight:700;font-size:32px;color:var(--red);align-self:flex-start;margin-top:2px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;margin-top:20px}
+.panel{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line-soft);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 28px rgba(0,0,0,.4)}
+.col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
+.p-head{display:flex;align-items:center;gap:10px;padding:11px 16px;background:linear-gradient(90deg,rgba(204,0,0,.6),rgba(204,0,0,.2));border-bottom:1px solid var(--line)}
+.p-head .bar{width:3px;height:16px;background:var(--gold);border-radius:2px;flex:none}
+.p-head h2{font-family:'Barlow Condensed';font-weight:800;letter-spacing:2px;font-size:14px;text-transform:uppercase;flex:1}
+.p-head .ct{font-family:'Barlow Condensed';font-weight:700;font-size:12px;color:var(--gold);letter-spacing:1px}
+.p-body{padding:6px 0;flex:1}
+.scroll{max-height:320px;overflow-y:auto}
+.scroll::-webkit-scrollbar{width:6px}.scroll::-webkit-scrollbar-thumb{background:var(--red);border-radius:4px}
+.loading{padding:20px 16px;color:var(--muted-2);font-family:'Barlow Condensed';letter-spacing:1px;font-size:13px;text-transform:uppercase}
+.empty,.err{padding:20px 16px;color:var(--muted);font-family:'Barlow Condensed';font-size:14px}
+.err{color:var(--red)}
+.result-row{display:flex;align-items:center;gap:10px;padding:7px 14px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .15s}
+.result-row:hover{background:rgba(255,255,255,.04)}
+.result-row.jgr{background:rgba(204,0,0,.08);border-left:2px solid var(--red)}
+.pos-num{font-family:'Barlow Condensed';font-weight:900;font-size:18px;color:var(--muted-2);width:30px;text-align:center;flex:none}
+.pos-num.p1{color:var(--gold)}.pos-num.p2{color:#C0C0C0}.pos-num.p3{color:#CD7F32}
+.driver-name{font-family:'Barlow Condensed';font-weight:700;font-size:15px;flex:1}
+.car-num{font-family:'Barlow Condensed';font-weight:900;font-size:12px;color:var(--muted-2);background:rgba(255,255,255,.06);padding:2px 7px;border-radius:3px}
+.jgr-badge{font-family:'Barlow Condensed';font-weight:800;font-size:10px;letter-spacing:1px;color:var(--red);background:rgba(204,0,0,.15);border:1px solid rgba(204,0,0,.4);padding:1px 6px;border-radius:3px;text-transform:uppercase}
+.winner-badge{font-family:'Barlow Condensed';font-weight:800;font-size:10px;letter-spacing:1px;color:var(--gold);background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.35);padding:1px 6px;border-radius:3px}
+.stand-row{display:flex;align-items:center;gap:10px;padding:7px 14px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .15s}
+.stand-row:hover{background:rgba(255,255,255,.04)}
+.stand-row.jgr{background:rgba(204,0,0,.08);border-left:2px solid var(--red)}
+.stand-rank{font-family:'Barlow Condensed';font-weight:900;font-size:16px;color:var(--muted-2);width:26px;text-align:center;flex:none}
+.stand-name{font-family:'Barlow Condensed';font-weight:700;font-size:15px;flex:1}
+.stand-pts{font-family:'Barlow Condensed';font-weight:800;font-size:15px;color:var(--gold);min-width:50px;text-align:right}
+.stand-wins{font-family:'Barlow Condensed';font-weight:600;font-size:13px;color:var(--muted);min-width:30px;text-align:right}
+.jgr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px}
+.jgr-card{background:rgba(255,255,255,.04);border:1px solid var(--line-soft);border-radius:6px;padding:12px;text-align:center;transition:border-color .15s}
+.jgr-card:hover{border-color:var(--line)}
+.jgr-card .car{font-family:'Barlow Condensed';font-weight:900;font-size:28px;color:var(--red);line-height:1}
+.jgr-card .dname{font-family:'Barlow Condensed';font-weight:800;font-size:14px;letter-spacing:.5px;margin-top:4px;line-height:1.2}
+.jgr-card .dlast{color:var(--gold)}
+.jgr-card .last-finish{margin-top:8px;font-family:'Barlow Condensed';font-weight:900;font-size:24px;color:var(--gold)}
+.jgr-card .last-label{font-family:'Barlow Condensed';font-size:10px;letter-spacing:1.5px;color:var(--muted-2);text-transform:uppercase}
+.jgr-card .stats{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+.jgr-card .stat{display:flex;justify-content:space-between;font-family:'Barlow Condensed';font-size:12px;color:var(--muted)}
+.jgr-card .stat .val{color:var(--ink);font-weight:700}
+.sched-row{display:flex;align-items:center;gap:10px;padding:7px 14px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .15s;font-family:'Barlow Condensed'}
+.sched-row:hover{background:rgba(255,255,255,.04)}
+.sched-row.next{background:rgba(255,215,0,.06);border-left:2px solid var(--gold)}
+.sched-row.done{opacity:.55}
+.sched-num{font-weight:800;font-size:13px;color:var(--muted-2);width:24px;text-align:center;flex:none}
+.sched-name{font-weight:700;font-size:14px;flex:1}
+.sched-date{font-weight:600;font-size:12px;color:var(--muted);min-width:90px;text-align:right}
+.sched-status{font-weight:700;font-size:11px;color:var(--muted-2);min-width:50px;text-align:right}
+.news-item{display:block;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s}
+.news-item:hover{background:rgba(255,255,255,.04)}
+.news-item .hl{font-family:'Barlow Condensed';font-weight:700;font-size:15px;line-height:1.25}
+.news-item:hover .hl{color:var(--gold)}
+.news-item .ds{color:var(--muted);font-size:13px;margin-top:3px;line-height:1.4;font-family:'Barlow Condensed'}
+.news-item .tm{font-family:'Barlow Condensed';font-weight:600;letter-spacing:1px;font-size:10px;color:var(--muted-2);text-transform:uppercase;margin-top:4px}
+footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--line-soft);color:var(--muted-2);font-family:'Barlow Condensed';font-size:12px;letter-spacing:.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+footer .g{color:var(--gold-dim)}
+.fab{position:fixed;right:22px;z-index:40;display:flex;align-items:center;gap:9px;font-family:'Barlow Condensed';font-weight:800;letter-spacing:1.5px;font-size:13px;text-transform:uppercase;border-radius:50px;padding:13px 20px;cursor:pointer;transition:transform .15s,background .15s;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.fab:hover{transform:translateY(-2px)}
+.fab-pit{bottom:22px;background:linear-gradient(160deg,var(--gold),var(--gold-dim));color:var(--black);border:none}
+.fab-bet{bottom:78px;background:var(--black-2);color:var(--gold);border:1px solid var(--gold)}
+.fab-bet:hover{background:var(--gold);color:var(--black)}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(430px,94vw);z-index:60;transform:translateX(102%);background:linear-gradient(180deg,var(--black-2),var(--black));border-left:1px solid var(--line);box-shadow:-18px 0 50px rgba(0,0,0,.7);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.drawer.open{transform:translateX(0)}
+.drawer-hd{display:flex;align-items:center;gap:12px;padding:16px 20px;background:linear-gradient(90deg,rgba(204,0,0,.7),rgba(204,0,0,.2));border-bottom:1px solid var(--line)}
+.drawer-hd .bar{width:3px;height:22px;background:var(--gold);border-radius:2px}
+.drawer-hd h2{font-family:'Barlow Condensed';font-weight:800;letter-spacing:2px;font-size:18px;text-transform:uppercase;flex:1}
+.drawer-hd button{background:none;border:1px solid var(--line);color:var(--gold);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:16px;transition:all .15s}
+.drawer-hd button:hover{background:var(--gold);color:var(--black)}
+.drawer-body{padding:18px 20px;overflow-y:auto;flex:1}
+.drawer-body::-webkit-scrollbar{width:6px}.drawer-body::-webkit-scrollbar-thumb{background:var(--red);border-radius:4px}
+.src{margin-bottom:22px}
+.src-hd{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.src-hd .nm{font-family:'Barlow Condensed';font-weight:800;letter-spacing:1.5px;font-size:15px;text-transform:uppercase;color:var(--gold)}
+.src-hd .tag{font-family:'Barlow Condensed';font-weight:600;letter-spacing:1px;font-size:10px;text-transform:uppercase;color:var(--muted-2)}
+.links{display:flex;flex-direction:column;gap:7px}
+.links a{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--panel);border:1px solid var(--line-soft);border-radius:6px;font-family:'Barlow Condensed';font-weight:600;font-size:14px;transition:all .15s}
+.links a:hover{border-color:var(--line);background:var(--panel-2);color:var(--gold);transform:translateX(3px)}
+.links a .ar{margin-left:auto;color:var(--muted-2);font-size:12px}
+.links a:hover .ar{color:var(--gold)}
+.links a.feat{border-color:var(--gold);color:var(--gold)}
+.drawer-note{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.4px;color:var(--muted-2);line-height:1.5;border-top:1px solid var(--line-soft);padding-top:12px}
+.drawer-note .g{color:var(--gold-dim)}
+@media(max-width:900px){.panel{grid-column:span 12}.col-4,.col-6,.col-8{grid-column:span 12}.hero-body{grid-template-columns:1fr}.count{justify-content:flex-start;margin-top:12px}.jgr-grid{grid-template-columns:repeat(2,1fr)}.race-info .track-name{font-size:28px}}
+
+  /* ── STATS PANEL ── */
+  .stats-tabs{display:flex;gap:0;border-bottom:1px solid var(--line);overflow-x:auto;padding:0 4px}
+  .stats-tabs::-webkit-scrollbar{height:4px}.stats-tabs::-webkit-scrollbar-thumb{background:var(--red)}
+  .stab{font-family:'Barlow Condensed';font-weight:800;letter-spacing:1.5px;font-size:12px;text-transform:uppercase;padding:10px 16px;color:var(--muted-2);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none}
+  .stab:hover{color:var(--ink)}.stab.active{color:var(--gold);border-bottom-color:var(--gold)}
+  .stats-scroll{max-height:420px;overflow-y:auto;overflow-x:auto}
+  .stats-scroll::-webkit-scrollbar{width:6px;height:6px}.stats-scroll::-webkit-scrollbar-thumb{background:var(--red);border-radius:4px}
+  .stats-tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+  .stats-tbl thead tr{background:rgba(255,255,255,.05);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2}
+  .stats-tbl th{font-family:'Barlow Condensed';font-weight:800;letter-spacing:1px;font-size:11px;text-transform:uppercase;color:var(--muted-2);padding:8px 10px;text-align:right;white-space:nowrap;cursor:pointer;user-select:none;background:var(--panel-2)}
+  .stats-tbl th:first-child{text-align:left;position:sticky;left:0;background:var(--panel-2);z-index:3}
+  .stats-tbl th.sorted{color:var(--gold)}
+  .stats-tbl td{padding:7px 10px;text-align:right;border-bottom:1px solid rgba(255,255,255,.03);font-family:'Barlow Condensed';font-size:13.5px;white-space:nowrap}
+  .stats-tbl td:first-child{text-align:left;font-weight:700;position:sticky;left:0;background:var(--panel);z-index:1}
+  .stats-tbl tr:hover td{background:rgba(255,255,255,.04)}.stats-tbl tr:hover td:first-child{background:rgba(255,255,255,.04)}
+  .stats-tbl tr.jgr-row td{color:var(--gold)}.stats-tbl tr.jgr-row td:first-child{color:var(--gold)}
+  .stats-foot{font-family:'Barlow Condensed';font-size:12px;letter-spacing:.5px;color:var(--muted-2);padding:7px 16px;text-align:right;border-top:1px solid var(--line-soft);background:rgba(255,255,255,.02)}
+  .sort-arrow{font-size:9px;margin-left:3px;opacity:.6}
+</style>
+</head>
+<body>
+<div class="ticker"><div class="tag">PIT&nbsp;ROAD</div><div class="track" id="ticker"><span>Loading NASCAR Cup Series updates&hellip;</span></div></div>
+<div class="wrap">
+  <header>
+    <div class="head">
+      <div class="brand">
+        <div class="crest">JGR<br>CUP</div>
+        <div><h1>NASCAR <span class="g">WATCH</span></h1><div class="sub">Joe Gibbs Racing &middot; Cup Series &middot; 2026</div></div>
+      </div>
+      <div class="status"><div class="live"><span class="dot"></span> Live Feed</div><div class="upd" id="updated">Syncing&hellip;</div></div>
+    </div>
+    <div class="hero">
+      <div class="hero-top"><div class="lbl" id="heroLbl">Next Race</div><div class="race-num" id="raceNum">&mdash;</div></div>
+      <div class="hero-body">
+        <div class="race-info">
+          <div class="track-name" id="trackName">Loading schedule&hellip;</div>
+          <div class="race-meta" id="raceMeta"></div>
+          <div class="broadcast" id="broadcast" style="display:none"></div>
+        </div>
+        <div class="count" id="countdown"></div>
+      </div>
+    </div>
+  </header>
+  <div class="grid">
+    <section class="panel col-12">
+      <div class="p-head"><span class="bar"></span><h2>JGR Spotlight</h2><span class="ct">#11 &middot; #19 &middot; #20 &middot; #54</span></div>
+      <div id="jgrSpot" class="jgr-grid"><div class="loading" style="grid-column:1/-1">Loading JGR driver data&hellip;</div></div>
+    </section>
+    <section class="panel col-8">
+      <div class="p-head"><span class="bar"></span><h2>Last Race Results</h2><span class="ct" id="lastRaceName">&mdash;</span></div>
+      <div class="p-body scroll" id="results"><div class="loading">Fetching race results&hellip;</div></div>
+    </section>
+    <section class="panel col-4">
+      <div class="p-head"><span class="bar"></span><h2>Cup Standings</h2><span class="ct" id="standCt"></span></div>
+      <div class="p-body scroll" id="standings"><div class="loading">Loading standings&hellip;</div></div>
+    </section>
+    <section class="panel col-8">
+      <div class="p-head"><span class="bar"></span><h2>2026 Schedule</h2><span class="ct">36 Races</span></div>
+      <div class="p-body scroll" id="schedule"><div class="loading">Loading schedule&hellip;</div></div>
+    </section>
+    <section class="panel col-4">
+      <div class="p-head"><span class="bar"></span><h2>NASCAR Wire</h2><span class="ct">News</span></div>
+      <div class="p-body scroll" id="news"><div class="loading">Loading headlines&hellip;</div></div>
+    </section>
+
+    <!-- STATS PANEL -->
+    <section class="panel col-12">
+      <div class="p-head"><span class="bar"></span><h2>NASCAR Stats</h2><span class="ct">ESPN &middot; Live Data</span></div>
+      <div class="stats-tabs" id="statsTabs">
+        <button class="stab active" data-pane="standings_detail">Standings Detail</button>
+        <button class="stab" data-pane="jgr_results">JGR Race Log</button>
+        <button class="stab" data-pane="race_log">Full Race Log</button>
+      </div>
+      <div class="stats-scroll" id="statsBody"><div class="loading">Loading stats&hellip;</div></div>
+      <div class="stats-foot">Click any column header to sort &uarr;&darr; &nbsp;&middot;&nbsp; Scroll right for more &rarr;</div>
+    </section>
+  </div>
+  <footer>
+    <div>Data: <span class="g">ESPN</span> (race results &middot; standings &middot; schedule &middot; news). Keyless public feeds.</div>
+    <div>Auto-refresh every 5 min &middot; <span class="g">JGR: #11 Hamlin &middot; #19 Briscoe &middot; #20 Bell &middot; #54 Ty Gibbs</span></div>
+  </footer>
+</div>
+<button class="fab fab-pit" id="pitOpen"><span>&#9881;</span> Pit Wall</button>
+<button class="fab fab-bet" id="betOpen"><span>&#128176;</span> Betting</button>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="pitDrawer" aria-hidden="true">
+  <div class="drawer-hd"><span class="bar"></span><h2>Pit Wall</h2><button id="pitClose">&#10005;</button></div>
+  <div class="drawer-body">
+    <div class="src">
+      <div class="src-hd"><span class="nm">Racing Reference</span><span class="tag">Stats &middot; Free</span></div>
+      <div class="links">
+        <a href="https://www.racing-reference.info/standings/2026/W/" target="_blank" rel="noopener">2026 Driver Standings <span class="ar">&#8599;</span></a>
+        <a href="https://www.racing-reference.info/season/2026/W/" target="_blank" rel="noopener">2026 Season Results <span class="ar">&#8599;</span></a>
+        <a href="https://www.racing-reference.info/driver/denny_hamlin/" target="_blank" rel="noopener">#11 Denny Hamlin <span class="ar">&#8599;</span></a>
+        <a href="https://www.racing-reference.info/driver/chase_briscoe/" target="_blank" rel="noopener">#19 Chase Briscoe <span class="ar">&#8599;</span></a>
+        <a href="https://www.racing-reference.info/driver/christopher_bell/" target="_blank" rel="noopener">#20 Christopher Bell <span class="ar">&#8599;</span></a>
+        <a href="https://www.racing-reference.info/driver/ty_gibbs/" target="_blank" rel="noopener">#54 Ty Gibbs <span class="ar">&#8599;</span></a>
+      </div>
+    </div>
+    <div class="src">
+      <div class="src-hd"><span class="nm">Joe Gibbs Racing</span><span class="tag">Official</span></div>
+      <div class="links">
+        <a href="https://www.joegibbsracing.com" target="_blank" rel="noopener">JoeGibbsRacing.com <span class="ar">&#8599;</span></a>
+        <a href="https://www.nascar.com/standings/nascar-cup-series/" target="_blank" rel="noopener">Official Cup Standings <span class="ar">&#8599;</span></a>
+        <a href="https://www.nascar.com/schedule/series/nascar-cup-series/" target="_blank" rel="noopener">Official Schedule <span class="ar">&#8599;</span></a>
+      </div>
+    </div>
+    <div class="drawer-note">Data via ESPN public feeds. <span class="g">Racing Reference</span> has full historical stats by driver &amp; track.</div>
+  </div>
+</aside>
+<aside class="drawer" id="betDrawer" aria-hidden="true">
+  <div class="drawer-hd"><span class="bar"></span><h2>Betting</h2><button id="betClose">&#10005;</button></div>
+  <div class="drawer-body">
+    <div class="src">
+      <div class="src-hd"><span class="nm">Sportsbooks</span><span class="tag">Race Winner Odds</span></div>
+      <div class="links">
+        <a class="feat" href="https://sportsbook.fanduel.com/navigation/nascar" target="_blank" rel="noopener">FanDuel — NASCAR <span class="ar">&#8599;</span></a>
+        <a href="https://sportsbook.draftkings.com/leagues/racing/nascar-cup-series" target="_blank" rel="noopener">DraftKings — NASCAR <span class="ar">&#8599;</span></a>
+        <a href="https://espnbet.com" target="_blank" rel="noopener">ESPN BET <span class="ar">&#8599;</span></a>
+        <a href="https://sports.betmgm.com/en/sports/racing-11" target="_blank" rel="noopener">BetMGM — NASCAR <span class="ar">&#8599;</span></a>
+      </div>
+    </div>
+    <div class="src">
+      <div class="src-hd"><span class="nm">Odds &amp; Analysis</span><span class="tag">Compare the Board</span></div>
+      <div class="links">
+        <a href="https://www.vegasinsider.com/auto-racing/nascar/odds/" target="_blank" rel="noopener">VegasInsider — NASCAR Odds <span class="ar">&#8599;</span></a>
+        <a href="https://www.oddsshark.com/nascar/odds" target="_blank" rel="noopener">OddsShark — NASCAR <span class="ar">&#8599;</span></a>
+        <a href="https://www.actionnetwork.com/racing/nascar" target="_blank" rel="noopener">Action Network — NASCAR <span class="ar">&#8599;</span></a>
+      </div>
+    </div>
+    <div class="drawer-note">Must be <span class="g">21+</span> and physically located where betting is legal. Problem gambling: <span class="g">1-800-GAMBLER</span>.</div>
+  </div>
+</aside>
+<script>
+const LEAGUE='nascar-premier';
+const BASE=`https://site.api.espn.com/apis/site/v2/sports/racing/${LEAGUE}`;
+const JGR={'747':{name:'Denny Hamlin',car:'#11'},'4773':{name:'Chase Briscoe',car:'#19'},'4700':{name:'Christopher Bell',car:'#20'},'5651':{name:'Ty Gibbs',car:'#54'}};
+const JGR_IDS=new Set(Object.keys(JGR));
+const $=id=>document.getElementById(id);
+let nextRaceDate=null;
+const jgrLastFinish={};
+
+async function getJSON(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(r.status);return r.json();}
+function relTime(d){const s=(Date.now()-new Date(d).getTime())/1000;if(s<3600)return Math.max(1,Math.floor(s/60))+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
+
+async function loadScoreboard(){
+  try{
+    const data=await getJSON(`${BASE}/scoreboard`);
+    const calendar=(data.leagues&&data.leagues[0]&&data.leagues[0].calendar)||[];
+    const events=data.events||[];
+    const last=events.find(e=>e.status&&e.status.type&&e.status.type.completed);
+    if(last){$('lastRaceName').textContent=last.shortName||last.name||'Last Race';renderResults(last);}
+    renderSchedule(calendar);
+    const now=Date.now();
+    const nextCal=calendar.find(c=>new Date(c.startDate).getTime()>now);
+    if(nextCal){
+      nextRaceDate=new Date(nextCal.startDate);
+      $('trackName').textContent=nextCal.label.replace('NASCAR Cup Series at ','').replace('NASCAR Cup Series ','');
+      const raceIdx=calendar.indexOf(nextCal)+1;
+      $('raceNum').textContent=`Race ${raceIdx} of ${calendar.length}`;
+      $('raceMeta').textContent=nextRaceDate.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})+' · '+nextRaceDate.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+    } else if(last){
+      $('heroLbl').textContent='Last Race';
+      $('trackName').textContent=last.shortName||last.name;
+    }
+  }catch(e){$('trackName').textContent='Schedule unavailable';}
+}
+
+function renderResults(event){
+  const comp=(event.competitions&&event.competitions[0])||{};
+  const competitors=(comp.competitors||[]).slice().sort((a,b)=>a.order-b.order);
+  if(!competitors.length){$('results').innerHTML='<div class="empty">No result data.</div>';return;}
+  let html='';
+  competitors.forEach(c=>{
+    const id=String(c.id||(c.athlete&&c.athlete.id)||'');
+    const name=(c.athlete&&(c.athlete.displayName||c.athlete.fullName))||'Unknown';
+    const isJGR=JGR_IDS.has(id);
+    const jgrInfo=JGR[id];
+    const pos=c.order||'—';
+    if(isJGR)jgrLastFinish[id]=pos;
+    const posClass=pos===1?'p1':pos===2?'p2':pos===3?'p3':'';
+    html+=`<div class="result-row ${isJGR?'jgr':''}">
+      <span class="pos-num ${posClass}">${pos}</span>
+      <span class="driver-name">${name}</span>
+      ${isJGR?`<span class="car-num">${jgrInfo.car}</span><span class="jgr-badge">JGR</span>`:''}
+      ${c.winner?'<span class="winner-badge">&#127942; WIN</span>':''}
+    </div>`;
+  });
+  $('results').innerHTML=html;
+  renderJGRSpotlight();
+}
+
+function renderSchedule(calendar){
+  if(!calendar.length){$('schedule').innerHTML='<div class="empty">No schedule data.</div>';return;}
+  const now=Date.now();
+  let html='';
+  let foundNext=false;
+  calendar.forEach((race,i)=>{
+    const raceDate=new Date(race.startDate);
+    const isDone=raceDate.getTime()<now-3600000;
+    const isNext=!isDone&&!foundNext;
+    if(isNext)foundNext=true;
+    const raceName=race.label.replace('NASCAR Cup Series at ','').replace('NASCAR Cup Series ','');
+    const dateStr=raceDate.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+    html+=`<div class="sched-row ${isNext?'next':''} ${isDone?'done':''}">
+      <span class="sched-num">${i+1}</span>
+      <span class="sched-name">${raceName}</span>
+      <span class="sched-date">${dateStr}</span>
+      <span class="sched-status">${isDone?'Final':isNext?'&#9654; Next':''}</span>
+    </div>`;
+  });
+  $('schedule').innerHTML=html;
+}
+
+function renderJGRSpotlight(){
+  const order=['747','4773','4700','5651'];
+  let html='';
+  order.forEach(id=>{
+    const info=JGR[id];
+    const nameParts=info.name.split(' ');
+    const last=nameParts[nameParts.length-1];
+    const first=nameParts.slice(0,-1).join(' ');
+    const lf=jgrLastFinish[id]||'—';
+    html+=`<div class="jgr-card">
+      <div class="car">${info.car}</div>
+      <div class="dname">${first}<br><span class="dlast">${last}</span></div>
+      <div class="last-finish">${lf}</div>
+      <div class="last-label">Last Finish</div>
+    </div>`;
+  });
+  $('jgrSpot').innerHTML=html;
+}
+
+async function loadStandings(){
+  try{
+    const data=await getJSON(`https://sports.core.api.espn.com/v2/sports/racing/leagues/${LEAGUE}/seasons/2026/types/2/standings`);
+    const entries=data.entries||[];
+    if(!entries.length){$('standings').innerHTML='<div class="empty">Standings unavailable via API.</div>';return;}
+    $('standCt').textContent=entries.length+' drivers';
+    let html='';
+    entries.slice(0,30).forEach((entry,i)=>{
+      const athlete=entry.athlete||{};
+      const id=String(athlete.id||'');
+      const name=athlete.displayName||athlete.name||`Driver ${i+1}`;
+      const isJGR=JGR_IDS.has(id);
+      const stats=entry.stats||[];
+      const pts=(stats.find(s=>s.name==='points'||s.abbreviation==='PTS')||{}).displayValue||'—';
+      const wins=(stats.find(s=>s.name==='wins'||s.abbreviation==='W')||{}).displayValue||'0';
+      const rank=(stats.find(s=>s.name==='rank'||s.abbreviation==='RK')||{}).displayValue||(i+1);
+      html+=`<div class="stand-row ${isJGR?'jgr':''}">
+        <span class="stand-rank">${rank}</span>
+        <span class="stand-name">${name}${isJGR?` <span class="jgr-badge">JGR</span>`:''}</span>
+        <span class="stand-wins">${wins}W</span>
+        <span class="stand-pts">${pts}</span>
+      </div>`;
+    });
+    $('standings').innerHTML=html;
+  }catch(e){$('standings').innerHTML='<div class="empty">Standings unavailable — check NASCAR.com</div>';}
+}
+
+async function loadNews(){
+  try{
+    const data=await getJSON(`${BASE}/news?limit=12`);
+    const arts=(data.articles||[]).filter(a=>a.headline);
+    if(!arts.length){$('news').innerHTML='<div class="empty">No headlines.</div>';return;}
+    const heads=arts.slice(0,10).map(a=>a.headline);
+    $('ticker').innerHTML=heads.concat(heads).map(h=>`<span>${h}</span>`).join('');
+    $('news').innerHTML=arts.slice(0,8).map(a=>{
+      const href=(a.links&&a.links.web&&a.links.web.href)||'#';
+      const when=a.published?`<div class="tm">${relTime(a.published)}</div>`:'';
+      const ds=a.description?`<div class="ds">${a.description.substring(0,100)}${a.description.length>100?'…':''}</div>`:'';
+      return `<a class="news-item" href="${href}" target="_blank" rel="noopener"><div class="hl">${a.headline}</div>${ds}${when}</a>`;
+    }).join('');
+  }catch(e){$('news').innerHTML='<div class="err">News feed unavailable.</div>';}
+}
+
+function tickCountdown(){
+  const el=$('countdown');if(!nextRaceDate){el.innerHTML='';return;}
+  let diff=Math.floor((nextRaceDate.getTime()-Date.now())/1000);
+  if(diff<0){el.innerHTML='<div class="unit"><div class="num" style="font-size:26px">RACE DAY</div><div class="cap">Green Flag</div></div>';return;}
+  const d=Math.floor(diff/86400);diff-=d*86400;const h=Math.floor(diff/3600);diff-=h*3600;const m=Math.floor(diff/60);const s=diff-m*60;
+  const u=(n,c)=>`<div class="unit"><div class="num">${String(n).padStart(2,'0')}</div><div class="cap">${c}</div></div>`;
+  el.innerHTML=u(d,'Days')+'<div class="colon">:</div>'+u(h,'Hrs')+'<div class="colon">:</div>'+u(m,'Min')+'<div class="colon">:</div>'+u(s,'Sec');
+}
+
+function openDrawer(id){
+  ['pitDrawer','betDrawer'].forEach(d=>{$(d).classList.remove('open');$(d).setAttribute('aria-hidden','true');});
+  $(id).classList.add('open');$(id).setAttribute('aria-hidden','false');$('scrim').classList.add('open');
+}
+function closeAll(){
+  ['pitDrawer','betDrawer'].forEach(d=>{$(d).classList.remove('open');$(d).setAttribute('aria-hidden','true');});
+  $('scrim').classList.remove('open');
+}
+$('pitOpen').addEventListener('click',()=>openDrawer('pitDrawer'));
+$('betOpen').addEventListener('click',()=>openDrawer('betDrawer'));
+$('pitClose').addEventListener('click',closeAll);
+$('betClose').addEventListener('click',closeAll);
+$('scrim').addEventListener('click',closeAll);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll();});
+
+
+// ── STATS PANEL ──
+let statsCache = {};
+let curPane = 'standings_detail';
+let sortState = {};
+
+async function loadStatsPane(pane) {
+  if (pane === 'standings_detail') {
+    if (statsCache.standings_detail) { renderStatsTable(statsCache.standings_detail, pane); return; }
+    try {
+      const data = await getJSON(`https://sports.core.api.espn.com/v2/sports/racing/leagues/${LEAGUE}/seasons/2026/types/2/standings`);
+      const entries = data.entries || [];
+      const rows = entries.map(e => {
+        const a = e.athlete || {};
+        const stats = e.stats || [];
+        const gs = name => (stats.find(s => s.name===name||s.abbreviation===name||s.shortDisplayName===name)||{}).displayValue || '—';
+        return {
+          Driver: a.displayName || '—',
+          Rank: gs('rank') || gs('RK'),
+          Points: gs('points') || gs('PTS'),
+          Wins: gs('wins') || gs('W'),
+          'Top 5': gs('top5') || gs('T5'),
+          'Top 10': gs('top10') || gs('T10'),
+          Poles: gs('poles') || gs('POL'),
+          'Laps Led': gs('lapsLed') || gs('LL'),
+          DNF: gs('dnfs') || gs('DNF'),
+          'Playoff Pts': gs('playoffPoints') || gs('PP'),
+          _jgr: JGR_IDS.has(String(a.id || ''))
+        };
+      });
+      statsCache.standings_detail = { cols: ['Driver','Rank','Points','Wins','Top 5','Top 10','Poles','Laps Led','DNF','Playoff Pts'], rows, sort:'Rank', dir:1 };
+      renderStatsTable(statsCache.standings_detail, pane);
+    } catch(e) { document.getElementById('statsBody').innerHTML = '<div class="err">Standings data unavailable.</div>'; }
+
+  } else if (pane === 'jgr_results') {
+    if (statsCache.jgr_results) { renderStatsTable(statsCache.jgr_results, pane); return; }
+    try {
+      const data = await getJSON(`${BASE}/scoreboard`);
+      const calendar = (data.leagues&&data.leagues[0]&&data.leagues[0].calendar)||[];
+      const events = data.events || [];
+      const allEvents = [...events];
+      // Build JGR results from available events
+      const rows = [];
+      allEvents.filter(e => e.status&&e.status.type&&e.status.type.completed).forEach(ev => {
+        const comp = (ev.competitions&&ev.competitions[0])||{};
+        const competitors = comp.competitors||[];
+        const raceName = ev.shortName||ev.name||'Race';
+        const raceDate = comp.startDate ? new Date(comp.startDate).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : '—';
+        competitors.forEach(c => {
+          const id = String(c.id||(c.athlete&&c.athlete.id)||'');
+          if (JGR_IDS.has(id)) {
+            const info = JGR[id];
+            rows.push({
+              Race: raceName.replace('NASCAR Cup Series at ','').replace('NASCAR Cup Series ',''),
+              Date: raceDate,
+              Driver: info.name,
+              Car: info.car,
+              Finish: c.order || '—',
+              Win: c.winner ? 'W' : '—',
+              _jgr: true
+            });
+          }
+        });
+      });
+      statsCache.jgr_results = { cols:['Race','Date','Driver','Car','Finish','Win'], rows, sort:'Date', dir:-1 };
+      renderStatsTable(statsCache.jgr_results, pane);
+    } catch(e) { document.getElementById('statsBody').innerHTML = '<div class="err">Race log unavailable.</div>'; }
+
+  } else if (pane === 'race_log') {
+    if (statsCache.race_log) { renderStatsTable(statsCache.race_log, pane); return; }
+    try {
+      const data = await getJSON(`${BASE}/scoreboard`);
+      const events = data.events || [];
+      const rows = [];
+      events.filter(e => e.status&&e.status.type&&e.status.type.completed).forEach(ev => {
+        const comp = (ev.competitions&&ev.competitions[0])||{};
+        const winner = (comp.competitors||[]).find(c=>c.winner);
+        const raceName = (ev.shortName||ev.name||'').replace('NASCAR Cup Series at ','').replace('NASCAR Cup Series ','');
+        const raceDate = comp.startDate ? new Date(comp.startDate).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : '—';
+        const broadcast = comp.broadcast || '—';
+        const winnerId = winner && String(winner.id||(winner.athlete&&winner.athlete.id)||'');
+        const winnerName = winner ? (winner.athlete&&(winner.athlete.displayName||winner.athlete.fullName))||'—' : '—';
+        rows.push({
+          Race: raceName,
+          Date: raceDate,
+          Winner: winnerName,
+          TV: broadcast,
+          _jgr: winnerId && JGR_IDS.has(winnerId)
+        });
+      });
+      statsCache.race_log = { cols:['Race','Date','Winner','TV'], rows, sort:'Date', dir:-1 };
+      renderStatsTable(statsCache.race_log, pane);
+    } catch(e) { document.getElementById('statsBody').innerHTML = '<div class="err">Race log unavailable.</div>'; }
+  }
+}
+
+function renderStatsTable(cfg, pane) {
+  if (!cfg.rows.length) { document.getElementById('statsBody').innerHTML = '<div class="empty">No data available yet.</div>'; return; }
+  if (!sortState[pane]) sortState[pane] = { col: cfg.sort, dir: cfg.dir };
+  const { col: sc, dir: sd } = sortState[pane];
+  const avail = cfg.cols.filter(c => cfg.rows[0].hasOwnProperty(c));
+  const sorted = [...cfg.rows].sort((a,b) => {
+    const av=a[sc], bv=b[sc];
+    const an=parseFloat(av), bn=parseFloat(bv);
+    if (!isNaN(an)&&!isNaN(bn)) return (an-bn)*sd;
+    return String(av||'').localeCompare(String(bv||''))*sd;
+  });
+  let h = '<table class="stats-tbl"><thead><tr>';
+  avail.forEach(c => {
+    const isSorted = c===sc;
+    const arrow = isSorted ? (sd===-1?' ▼':' ▲') : '';
+    h += `<th class="${isSorted?'sorted':''}" data-col="${c}">${c}<span class="sort-arrow">${arrow}</span></th>`;
+  });
+  h += '</tr></thead><tbody>';
+  sorted.forEach(row => {
+    h += `<tr class="${row._jgr?'jgr-row':''}">`;
+    avail.forEach(c => { h += `<td>${row[c]===undefined||row[c]===null?'—':row[c]}</td>`; });
+    h += '</tr>';
+  });
+  h += '</tbody></table>';
+  document.getElementById('statsBody').innerHTML = h;
+  document.getElementById('statsBody').querySelectorAll('th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (sortState[pane]&&sortState[pane].col===col) sortState[pane].dir*=-1;
+      else sortState[pane]={col,dir:-1};
+      renderStatsTable(cfg, pane);
+    });
+  });
+}
+
+document.getElementById('statsTabs').addEventListener('click', e => {
+  const btn = e.target.closest('.stab'); if (!btn) return;
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  curPane = btn.dataset.pane;
+  document.getElementById('statsBody').innerHTML = '<div class="loading">Loading&hellip;</div>';
+  loadStatsPane(curPane);
+});
+
+loadStatsPane(curPane);
+
+function stamp(){$('updated').textContent='Updated '+new Date().toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});}
+async function refreshAll(){await Promise.allSettled([loadScoreboard(),loadStandings(),loadNews()]);renderJGRSpotlight();stamp();}
+refreshAll();setInterval(refreshAll,300000);setInterval(tickCountdown,1000);
+</script>
+<div style="margin:28px auto 0;max-width:1080px;padding:14px 16px 6px;border-top:1px solid #2a2a2a;font-family:'Barlow Condensed',ui-monospace,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#555;text-align:center">© 2026 R. Grimes · All rights reserved</div>
+</body>
+</html>
