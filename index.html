@@ -381,20 +381,29 @@ async function loadStandings(){
     const ref=(top.items&&top.items[0]&&top.items[0]['$ref'])||'';
     if(!ref){$('standings').innerHTML='<div class="empty">Standings unavailable.</div>';return;}
     const data=await getJSON(ref.replace('http://','https://'));
-    const entries=data.entries||[];
-    if(!entries.length){$('standings').innerHTML='<div class="empty">Standings unavailable.</div>';return;}
-    $('standCt').textContent=entries.length+' drivers';
-    let html='';
-    entries.slice(0,35).forEach((entry,i)=>{
-      const athlete=entry.athlete||{};
-      const id=String(athlete.id||athlete.uid||'').replace(/.*a:/,'');
-      const name=athlete.displayName||athlete.shortName||`Driver ${i+1}`;
-      const isJGR=JGR_IDS.has(id);
-      const stats=entry.stats||[];
+    const rows=data.standings||[];
+    if(!rows.length){$('standings').innerHTML='<div class="empty">Standings unavailable.</div>';return;}
+    // Fetch athlete names in parallel (just need display names)
+    const parsed=rows.map(row=>{
+      const rec=(row.records&&row.records[0])||{};
+      const stats=rec.stats||[];
       const gs=n=>(stats.find(s=>s.name===n||s.abbreviation===n)||{}).displayValue||'—';
-      const rank=gs('rank')||gs('RK')||(i+1);
-      const pts=gs('points')||gs('PTS');
-      const wins=gs('wins')||gs('W');
+      const athleteRef=(row.athlete&&row.athlete['$ref'])||'';
+      const idMatch=athleteRef.match(/athletes\/(\d+)/);
+      const id=idMatch?idMatch[1]:'';
+      return {id, stats, gs, athleteRef};
+    });
+    $('standCt').textContent=parsed.length+' drivers';
+    // Get athlete names from scoreboard competitor list (already loaded)
+    // Fall back to athlete ID display
+    let html='';
+    parsed.slice(0,35).forEach((p,i)=>{
+      const isJGR=JGR_IDS.has(p.id);
+      const jgrInfo=JGR[p.id];
+      const name=jgrInfo?jgrInfo.name:('Driver #'+p.id);
+      const rank=p.gs('rank')||p.gs('RK')||(i+1);
+      const pts=p.gs('championshipPts')||p.gs('PTS');
+      const wins=p.gs('wins')||p.gs('W');
       html+=`<div class="stand-row ${isJGR?'jgr':''}">
         <span class="stand-rank">${rank}</span>
         <span class="stand-name">${name}${isJGR?` <span class="jgr-badge">JGR</span>`:''}</span>
@@ -403,14 +412,13 @@ async function loadStandings(){
       </div>`;
     });
     $('standings').innerHTML=html;
-    // Cache for stats panel
-    statsCache._standingsEntries=entries;
+    statsCache._standingsRows=parsed;
   }catch(e){$('standings').innerHTML='<div class="empty">Standings unavailable — check NASCAR.com</div>';}
 }
 
 async function loadNews(){
   try{
-    const data=await getJSON(`https://site.api.espn.com/apis/site/v2/sports/racing/nascar-premier/news?limit=12`);
+    const data=await getJSON(`https://site.api.espn.com/apis/site/v2/sports/motorsports/nascar/news?limit=12`);
     const arts=(data.articles||[]).filter(a=>a.headline);
     if(!arts.length){$('news').innerHTML='<div class="empty">No headlines.</div>';return;}
     const heads=arts.slice(0,10).map(a=>a.headline);
@@ -458,30 +466,37 @@ async function loadStatsPane(pane) {
   if (pane === 'standings_detail') {
     if (statsCache.standings_detail) { renderStatsTable(statsCache.standings_detail, pane); return; }
     try {
-      const top = await getJSON(`https://sports.core.api.espn.com/v2/sports/racing/leagues/${LEAGUE}/seasons/2026/types/2/standings`);
-      const ref = (top.items&&top.items[0]&&top.items[0]['$ref'])||'';
-      const data = ref ? await getJSON(ref.replace('http://','https://')) : {};
-      const entries = data.entries || statsCache._standingsEntries || [];
-      const rows = entries.map(e => {
-        const a = e.athlete || {};
-        const id = String(a.id||a.uid||'').replace(/.*a:/,'');
-        const stats = e.stats || [];
-        const gs = name => (stats.find(s => s.name===name||s.abbreviation===name)||{}).displayValue || '—';
+      // Wait for standings to load if not cached
+      if (!statsCache._standingsRows) await loadStandings();
+      const parsed = statsCache._standingsRows || [];
+      // Get driver names from scoreboard
+      const sbData = await getJSON(`${BASE}/scoreboard`);
+      const allDrivers = {};
+      (sbData.events||[]).forEach(ev=>{
+        ((ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors)||[]).forEach(c=>{
+          const id=String(c.id||(c.athlete&&c.athlete.id)||'');
+          const name=(c.athlete&&(c.athlete.displayName||c.athlete.fullName))||'';
+          if(id&&name) allDrivers[id]=name;
+        });
+      });
+      const rows = parsed.map(p => {
+        const name = allDrivers[p.id] || (JGR[p.id]&&JGR[p.id].name) || ('ID:'+p.id);
         return {
-          Driver: a.displayName || a.shortName || '—',
-          Rank: gs('rank')||gs('RK'),
-          Points: gs('points')||gs('PTS'),
-          Wins: gs('wins')||gs('W'),
-          'Top 5': gs('top5')||gs('T5'),
-          'Top 10': gs('top10')||gs('T10'),
-          Poles: gs('poles')||gs('POL'),
-          'Laps Led': gs('lapsLed')||gs('LL'),
-          DNF: gs('dnfs')||gs('DNF'),
-          'Playoff Pts': gs('playoffPoints')||gs('PP'),
-          _jgr: JGR_IDS.has(id)
+          Driver: name,
+          Rank: p.gs('rank')||p.gs('RK'),
+          Points: p.gs('championshipPts')||p.gs('PTS'),
+          Wins: p.gs('wins')||p.gs('W'),
+          'Top 5': p.gs('top5')||p.gs('T5'),
+          'Top 10': p.gs('top10')||p.gs('T10'),
+          Poles: p.gs('poles')||p.gs('POLE'),
+          'Laps Led': p.gs('lapsLead')||p.gs('LL'),
+          Starts: p.gs('starts')||p.gs('S'),
+          DNF: p.gs('dnf')||p.gs('DNF'),
+          Behind: p.gs('behind')||p.gs('PB'),
+          _jgr: JGR_IDS.has(p.id)
         };
       });
-      statsCache.standings_detail = { cols: ['Driver','Rank','Points','Wins','Top 5','Top 10','Poles','Laps Led','DNF','Playoff Pts'], rows, sort:'Rank', dir:1 };
+      statsCache.standings_detail = { cols: ['Driver','Rank','Points','Wins','Top 5','Top 10','Poles','Laps Led','Starts','DNF','Behind'], rows, sort:'Rank', dir:1 };
       renderStatsTable(statsCache.standings_detail, pane);
     } catch(e) { document.getElementById('statsBody').innerHTML = '<div class="err">Standings data unavailable.</div>'; }
 
